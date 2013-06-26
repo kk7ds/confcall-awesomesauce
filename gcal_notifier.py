@@ -114,7 +114,7 @@ def tui_prompt_to_call_next(opts, delta, item, code):
 def fetch_latest():
     return urllib.urlopen(CONF.get('prefs', 'gcal_url')).read()
 
-def parse_config(conf_file='gcal_notifier.conf'):
+def parse_config(conf_file='gcal_notifier.cfg'):
     global CONF
     CONF = ConfigParser.ConfigParser()
     CONF.read(conf_file)
