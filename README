@@ -1,8 +1,13 @@
 Quickstart:
 
+== Basic Autodial Client Thingy ==
+
 1. Do:
-  cp example-server.cfg server.cfg
+
+   cp example-server.cfg server.cfg
+
 2. Edit server.cfg
+
 3. Install in extensions.conf:
 
     [magic_call]
@@ -10,11 +15,29 @@ Quickstart:
     exten => magic,1,Wait(5) ; Delay before sending passcode
         same => n,SendDTMF(${passcode}) ;
         same => n,Dial(SIP/yourdesk) ; Now call your desk phone
+
 4. Run server on the asterisk box as the asterisk user:
 
    ./server.py 192.168.1.2 # with a bind address
+
 5. Run the client from another machine against the asterisk box:
 
    ./client.py 192.168.1.2 8081 18005551212 1234
 
    The last two args are the phone number and passcode
+
+== Google Calendar Scraper ==
+
+0. Make sure zenity is installed
+
+1. Do:
+
+   cp example-gcal_notifier.cfg gcal_notifier.cfg
+
+2. Edit gcal_notifier.cfg
+
+3. Run gcal_notifier:
+
+   ./gcal_notifier.py
+
+4. If anything is found, you'll be notified by zenity
