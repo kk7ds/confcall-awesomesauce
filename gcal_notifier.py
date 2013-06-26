@@ -15,19 +15,45 @@ import client
 
 CONF = None
 
-def clean(code):
-    return code.replace(' ', '').replace('-', '')
+def find_passcodes(text):
+    def clean(code):
+        return code.replace(' ', '').replace('-', '')
 
-def find_passcode(text):
-    m = re.search('[Cc]ode: *([- 0-9]+)', text)
-    if m:
-        return int(clean(m.group(1)))
-    m = re.search('PC:? *([- 0-9]+)', text)
-    if m:
-        return int(clean(m.group(1)))
-    m = re.search('[Pp]asscode:? *([- 0-9]+)', text)
-    if m:
-        return int(clean(m.group(1)))
+    def intcodes(codes):
+        return [int(clean(x)) for x in codes]
+
+    codes = re.findall('[Cc]ode: *([- 0-9]+)', text)
+    if codes:
+        return intcodes(codes)
+    codes = re.findall('PC:? *([- 0-9]+)', text)
+    if codes:
+        return intcodes(codes)
+    codes = re.search('[Pp]asscode:? *([- 0-9]+)', text)
+    if codes:
+        return intcodes(codes)
+
+def choose_code(codes):
+    if not codes:
+        return
+
+    codes = set(codes)
+    try:
+        mycodes = [int(x) for x in
+                   CONF.get('prefs', 'my_codes').split(',')]
+        mymods = [int(x) for x in
+                  CONF.get('prefs', 'my_modcodes').split(',')]
+    except:
+        print 'Note: No "my_codes" setting'
+        return codes[0]
+
+    maybe_codes = codes - set(mycodes)
+    if maybe_codes:
+        return maybe_codes.pop()
+    elif codes and mymods:
+        # The codes found in the item were all my codes, so I must be
+        # leading this call. Find my moderator code that matches the
+        # particpant code that was in the item.
+        return mymods[mycodes.index(codes.pop())]
 
 def get_upcoming(cal, timerange):
     now = datetime.datetime.utcnow().replace(tzinfo=iso8601.iso8601.Utc())
@@ -43,7 +69,8 @@ def get_upcoming(cal, timerange):
     upcoming_calls = {}
     for delta in sorted(upcoming.keys()):
         item = upcoming[delta]
-        code = find_passcode(item.get('location') + item.get('summary'))
+        codes = find_passcodes(item.get('location') + item.get('summary'))
+        code = choose_code(codes)
         if code:
             upcoming_calls[delta] = (item, code)
     return upcoming_calls
