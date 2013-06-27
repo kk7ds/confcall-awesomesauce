@@ -10,6 +10,7 @@ import optparse
 import time
 import sys
 import subprocess
+from xml.sax import saxutils
 
 import icalendar
 
@@ -85,11 +86,12 @@ def gui_prompt_to_call_next(opts, delta, item, code):
     port = int(CONF.get('prefs', 'host_port'))
     number = CONF.get('prefs', 'conf_number')
 
-    msg = '%s (Passcode %s). Call this?' % (item.get('summary'),
+    msg = '%s (Passcode %s).\nCall this?' % (item.get('summary'),
                                             code)
+    msg = saxutils.escape(msg)
     os.system('%s %s >/dev/null 2>&1 &' % (player, sound))
 
-    gui = subprocess.Popen(['zenity', '--question', '--text=\'%s\'' % msg])
+    gui = subprocess.Popen(['zenity', '--question', '--text=%s' % msg])
     start = time.time()
     result = None
     while (time.time() - start) < timeout:
