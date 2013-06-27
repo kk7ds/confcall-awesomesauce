@@ -21,16 +21,19 @@ class CallHandler(BaseHTTPRequestHandler):
     def _make_call(self, req):
         config = get_config()
         call_file_data = """# Automatically generated
-Channel: SIP/%(number)s@%(peer)s
+Channel: SIP/%(phone_ext)s
 Context: %(context)s
 Extension: %(exten)s
 Priority: 1
 Set: passcode=%(passcode)s#
+Set: number=%(number)s
+Set: peer=%(peer)s
 """
 
         params = dict(peer=config.get('main', 'peer'),
                       context=config.get('main', 'context'),
                       exten=config.get('main', 'extension'),
+                      phone_ext=config.get('main', 'phone_ext'),
                       passcode=req['passcode'],
                       number=req['number'])
 

@@ -10,11 +10,8 @@ Quickstart:
 
 3. Install in extensions.conf:
 
-    [magic_call]
-
-    exten => magic,1,Wait(5) ; Delay before sending passcode
-        same => n,SendDTMF(${passcode}) ;
-        same => n,Dial(SIP/yourdesk) ; Now call your desk phone
+   [magic-call]
+   exten => magic,1,Dial(SIP/${number}@${peer},30,D(wwww${passcode}))
 
 4. Run server on the asterisk box as the asterisk user:
 
