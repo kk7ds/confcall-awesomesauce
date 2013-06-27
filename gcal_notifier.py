@@ -7,7 +7,9 @@ import re
 import urllib
 import ConfigParser
 import optparse
+import time
 import sys
+import subprocess
 
 import icalendar
 
@@ -78,8 +80,7 @@ def get_upcoming(cal, timerange):
 def gui_prompt_to_call_next(opts, delta, item, code):
     sound = CONF.get('prefs', 'alert_sound')
     player = CONF.get('prefs', 'alert_player')
-    # Apparently Zenity's timeout function is broken :(
-    # timeout = int(CONF.get('prefs', 'prompt_timeout'))
+    timeout = int(CONF.get('prefs', 'prompt_timeout'))
     host = CONF.get('prefs', 'asterisk_host')
     port = int(CONF.get('prefs', 'host_port'))
     number = CONF.get('prefs', 'conf_number')
@@ -87,7 +88,18 @@ def gui_prompt_to_call_next(opts, delta, item, code):
     msg = '%s (Passcode %s). Call this?' % (item.get('summary'),
                                             code)
     os.system('%s %s >/dev/null 2>&1 &' % (player, sound))
-    result = os.system("zenity --question --text='%s'" % (msg))
+
+    gui = subprocess.Popen(['zenity', '--question', '--text=\'%s\'' % msg])
+    start = time.time()
+    result = None
+    while (time.time() - start) < timeout:
+        if gui.poll() is not None:
+            result = gui.returncode
+            break
+    if result is None:
+        gui.terminate()
+        raise Exception("User did not respond, abort!")
+
     if result != 0:
         return
     if opts.dryrun:
